@@ -11,20 +11,28 @@ public class SampleMain10_CompletableFuture {
 	
 	public static void main(String[] args) {
 		
-		//runAsyncSample();
+		runAsyncSample();
 	
-		//suppyAsyncSample();
+		suppyAsyncSample();
 		
-		//joinSample();
+		joinSample();
 		
-		//thenAppySample();
+		thenAppySample();
 		
-		//thenComposeSample();
+		thenComposeSample();
 		
 		thenCombineSample();
+		
+		orTimeoutSample();
+		
+		completeOnTimeoutSample();
+		
+		allOfSample();
+		
+		anyOfSample();
 	}
 
-
+	
 	private static void runAsyncSample() {
 		CompletableFuture<Void> futureResultVoid = CompletableFuture.runAsync(() -> System.out.println("Hello world!!"));
 		try {
@@ -80,10 +88,13 @@ public class SampleMain10_CompletableFuture {
 		
 	}
 	
+	/**
+	 * thenCompose allows pipelining two asynchronous operations, 
+	 * passing the result of the first operation to second operation when it becomes available.
+	 */
 	private static void thenComposeSample() {
 		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello ";});
 		CompletableFuture<String> futureResultStringFinal = futureResultString.thenCompose( message -> CompletableFuture.supplyAsync(() -> {return "Hello " + message ;}));
-			//thenCompose allows pipelining two asynchronous operations, passing the result of the first operation to second operation when it becomes available. 
 		
 		try {
 			futureResultStringFinal.get();
@@ -98,12 +109,83 @@ public class SampleMain10_CompletableFuture {
 		CompletableFuture<String> futureResultString2 = CompletableFuture.supplyAsync(() -> {return "world!!";});
 		CompletableFuture<String> futureResultStringFinal = futureResultString.thenCombine(futureResultString2, (message1, message2) -> message1 + message2);
 		
+		printResult(futureResultStringFinal);
+	}
+	
+	
+	/**
+	 * "orTimeout" throws a Timeout-Exception if not completed after specified time period
+	 */
+	private static void orTimeoutSample() {
+		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello world!!";})
+				.orTimeout(5, TimeUnit.SECONDS);;
+
+		printResult(futureResultString);
+		
+	}
+	
+	
+	private static void completeOnTimeoutSample() {
+		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello world!!";})
+				.completeOnTimeout("<DEFAULT RESPONSE>", 5, TimeUnit.SECONDS);
+		
+		printResult(futureResultString);
+	}
+
+	/**
+	 * "allOf" takes as input an array of CompletableFutures and returns a CompletableFuture<Void> 
+	 *  that’s completed only when all the CompletableFutures passed have completed.
+	 *  Invoking join on the CompletableFuture returned by the allOf method provides an easy way 
+	 *  to wait for the completion of all the Completable-Futures
+	 */
+	private static void allOfSample() {
+		List<Integer> intList = List.of(1,2,3,4);
+		CompletableFuture[]  intFutures = intList.stream()
+				.map(n -> CompletableFuture.supplyAsync( () -> {
+																try {
+																	TimeUnit.SECONDS.sleep(n);
+																} catch (InterruptedException e) {
+																	// TODO Auto-generated catch block
+																	e.printStackTrace();
+																} 
+																return n;}))
+				.toArray(size -> new CompletableFuture[size]);
+		
+		CompletableFuture.allOf(intFutures).join();
+		
+	}
+	
+	
+	/**
+	 * "anyOf" takes as input an array of CompletableFutures and returns a CompletableFuture<Object> 
+	 *  that completes with the same value as the first-to-complete CompletableFuture.
+	 */
+	private static void anyOfSample() {
+		List<Integer> intList = List.of(1,2,3,4);
+		List<CompletableFuture<Integer>>  intFutureList = intList.stream()
+				.map(n -> CompletableFuture.supplyAsync( () -> {
+																try {
+																	TimeUnit.SECONDS.sleep(n);
+																} catch (InterruptedException e) {
+																	// TODO Auto-generated catch block
+																	e.printStackTrace();
+																} 
+																return n;}))
+				.collect(Collectors.toList());
+		
+		CompletableFuture[] intFutures = intFutureList.toArray(new CompletableFuture[intFutureList.size()]);
+		
+		CompletableFuture<Object> futureResult = CompletableFuture.anyOf(intFutures);
+		
+	}
+	
+	private static void printResult(CompletableFuture<String> futureResultString) {
 		try {
-			System.out.println(futureResultStringFinal.get());
+			System.out.println(futureResultString.get());
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
+	
 }
