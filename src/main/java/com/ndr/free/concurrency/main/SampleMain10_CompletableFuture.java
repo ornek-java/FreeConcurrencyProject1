@@ -3,24 +3,28 @@ package com.ndr.free.concurrency.main;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class SampleMain10_CompletableFuture {
 
+	
 	public static void main(String[] args) {
 		
-		runAsyncSample();
+		//runAsyncSample();
 	
-		suppyAsyncSample();
+		//suppyAsyncSample();
 		
-		joinSample();
+		//joinSample();
 		
-		thenAppySample();
+		//thenAppySample();
+		
+		//thenComposeSample();
+		
+		thenCombineSample();
 	}
 
-	
+
 	private static void runAsyncSample() {
 		CompletableFuture<Void> futureResultVoid = CompletableFuture.runAsync(() -> System.out.println("Hello world!!"));
 		try {
@@ -65,7 +69,41 @@ public class SampleMain10_CompletableFuture {
 	
 	private static void thenAppySample() {
 		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello ";});
-		futureResultString.thenApply( message -> {return message + " world";} );
+		CompletableFuture<String> futureResultStringFinal = futureResultString.thenApply( message -> {return message + " world";} );
+		
+		try {
+			futureResultStringFinal.get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static void thenComposeSample() {
+		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello ";});
+		CompletableFuture<String> futureResultStringFinal = futureResultString.thenCompose( message -> CompletableFuture.supplyAsync(() -> {return "Hello " + message ;}));
+			//thenCompose allows pipelining two asynchronous operations, passing the result of the first operation to second operation when it becomes available. 
+		
+		try {
+			futureResultStringFinal.get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static void thenCombineSample() {
+		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello ";});
+		CompletableFuture<String> futureResultString2 = CompletableFuture.supplyAsync(() -> {return "world!!";});
+		CompletableFuture<String> futureResultStringFinal = futureResultString.thenCombine(futureResultString2, (message1, message2) -> message1 + message2);
+		
+		try {
+			System.out.println(futureResultStringFinal.get());
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 }
