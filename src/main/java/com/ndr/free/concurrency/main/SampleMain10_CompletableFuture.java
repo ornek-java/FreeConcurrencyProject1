@@ -89,8 +89,8 @@ public class SampleMain10_CompletableFuture {
 	}
 	
 	/**
-	 * thenCompose allows pipelining two asynchronous operations, 
-	 * passing the result of the first operation to second operation when it becomes available.
+	 * "thenCompose" metodu iki asenkron işlemin uç uça birleştirilmesi için kullanılır. 
+	 * Birinci işlemin sonucu hazır olduğu zaman ikinci asenkron işleme input olarak geçirilir.
 	 */
 	private static void thenComposeSample() {
 		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello ";});
@@ -114,7 +114,7 @@ public class SampleMain10_CompletableFuture {
 	
 	
 	/**
-	 * "orTimeout" throws a Timeout-Exception if not completed after specified time period
+	 * "orTimeout" metodu asenkron işlem belirlenen süre içerisinde tamamlanamazsa "Timeout-Exception" fırlatır.
 	 */
 	private static void orTimeoutSample() {
 		CompletableFuture<String> futureResultString = CompletableFuture.supplyAsync(() -> {return "Hello world!!";})
@@ -134,7 +134,7 @@ public class SampleMain10_CompletableFuture {
 
 	/**
 	 * "allOf" takes as input an array of CompletableFutures and returns a CompletableFuture<Void> 
-	 *  that�s completed only when all the CompletableFutures passed have completed.
+	 *  that�s completed only when all the CompletableFutures passed have completed.
 	 *  Invoking join on the CompletableFuture returned by the allOf method provides an easy way 
 	 *  to wait for the completion of all the Completable-Futures
 	 */
